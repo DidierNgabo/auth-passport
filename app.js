@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import passport from 'passport';
 import cookieSession from 'cookie-session';
 import cors from 'cors';
+import loginRoutes from './src/routes/auth/login';
 import './passport';
 
 const app = express();
@@ -12,6 +13,8 @@ const port = process.env.Port || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.set('view engine', 'ejs');
 
 app.use(
   cookieSession({
@@ -30,8 +33,10 @@ const isLoggedIn = (req, res, next) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use('/auth', loginRoutes);
+
 app.get('/', (req, res) => {
-  res.send('hello google auth loggin first');
+  res.render('index');
 });
 app.get('/failed', (req, res) => {
   res.send('failed to login');

@@ -1,6 +1,12 @@
 /* eslint-disable comma-dangle */
 import passport from 'passport';
 
+import LocalStrategy from 'passport-local';
+
+import bcrypt from 'bcrypt';
+
+import { User } from './models';
+
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 passport.serializeUser((user, done) => {
@@ -21,4 +27,22 @@ passport.use(
     },
     (accessToken, refreshToken, profile, done) => done(null, profile)
   )
+);
+
+passport.use(
+  new LocalStrategy(async (username, password, done) => {
+    const isValidPassword = (userpass, pass) => bcrypt.compare(pass, userpass);
+    const user = await User.findOne({
+      where: {
+        name: username,
+      },
+    });
+    if (!user) {
+      return done(null, false, { message: 'Incorrect username.' });
+    }
+    if (!isValidPassword(user.password, password)) {
+      return done(null, false, { message: 'Incorrect password.' });
+    }
+    return done(null, user);
+  })
 );
